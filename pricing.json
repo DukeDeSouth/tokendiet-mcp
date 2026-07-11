@@ -1,0 +1,9 @@
+{
+  "default_model": "claude-sonnet-4",
+  "context_window_tokens": 200000,
+  "models": [
+    { "id": "claude-sonnet-4", "label": "Claude Sonnet 4 (approx)", "input_per_million_usd": 3 },
+    { "id": "claude-opus-4", "label": "Claude Opus 4 (approx)", "input_per_million_usd": 15 },
+    { "id": "gpt-4o", "label": "GPT-4o", "input_per_million_usd": 2.5 }
+  ]
+}

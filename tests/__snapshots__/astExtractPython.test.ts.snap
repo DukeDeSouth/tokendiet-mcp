@@ -1,0 +1,14 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Python AST extractors > outline snapshot 1`] = `
+"# imports
+import: os, pathlib
+
+# outline
+def helper(x: int) -> int: [5–7]
+@dataclass class Foo: [9–15]
+def bar(self, n: int) -> str: [13–15]
+async def main() -> None: [17–18]
+
+hint: expand(ref) for full file, read(mode=symbol, symbol="Name") for a single definition"
+`;

@@ -1,0 +1,31 @@
+---
+description: Prefer TokenDiet MCP tools for file reads, search, fetch, and command output to save context tokens.
+globs:
+alwaysApply: true
+---
+
+# TokenDiet (context compression)
+
+Use TokenDiet MCP tools instead of built-in Read, Grep, Bash, or raw fetch when output may be large.
+
+## Reading code
+
+1. **Start with `read` in `mode=outline` or `mode=auto`** for large source files (TypeScript, Python). Outline shows signatures and line ranges without full bodies.
+2. Drill into a single function with **`read` `mode=symbol`** and `symbol="Name"` or `symbol="Class.method"`.
+3. Escalate to **`mode=full`** only when you need the entire file.
+4. Call **`expand(ref)`** when the compressed view is not enough.
+
+## Search and web
+
+5. Prefer **`search`** over grep for repo-wide regex — results are snippet-compressed with paths and line numbers preserved.
+6. Prefer **`fetch`** for http(s) URLs — HTML/JSON/text is compressed; use `expand(ref)` for the full page.
+
+## Commands
+
+7. Prefer **`run`** over Bash for tests, builds, and logs (compressed stdout/stderr, full output in `ref`).
+
+## Fallback
+
+8. Use built-in Read/Grep/Bash when TokenDiet is unavailable.
+
+Each tool response includes `compression.saved` (honest BPE). Call **`stats`** for cumulative session savings.

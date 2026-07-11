@@ -1,0 +1,59 @@
+{
+  "name": "tokendiet-mcp",
+  "version": "0.2.0",
+  "description": "Local MCP server that compresses file reads, command outputs and web content before they enter the agent context — with an honest BPE token counter and a safety verifier.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "tokendiet-mcp": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "wasm",
+    "pricing.json",
+    "templates"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prebuild": "node scripts/copy-tree-sitter-wasm.mjs",
+    "test": "vitest run",
+    "pretest": "node scripts/copy-tree-sitter-wasm.mjs",
+    "test:watch": "vitest",
+    "dogfood:synthetic": "tsx scripts/dogfood-synthetic.ts",
+    "dogfood:r1": "tsx scripts/dogfood-r1.ts",
+    "dogfood:r2": "tsx scripts/dogfood-r2.ts",
+    "dogfood:r3": "tsx scripts/dogfood-r3.ts",
+    "dogfood:r4": "tsx scripts/dogfood-r4.ts",
+    "dogfood:r5": "tsx scripts/dogfood-r5.ts",
+    "dogfood:sf": "tsx scripts/dogfood-sf.ts",
+    "dogfood:v3-gate": "npm run build && tsx scripts/dogfood-v3-gate.ts",
+    "dogfood:all": "npm run build && npm run dogfood:synthetic && npm run dogfood:r2 && npm run dogfood:r1 && npm run dogfood:r3 && npm run dogfood:r4 && npm run dogfood:r5 && npm run dogfood:sf",
+    "check-disclosure": "node scripts/check-disclosure.mjs",
+    "postinstall": "npm rebuild better-sqlite3 && node scripts/copy-tree-sitter-wasm.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "better-sqlite3": "^12.11.1",
+    "diff": "^7.0.0",
+    "domutils": "^4.0.2",
+    "gpt-tokenizer": "^3.4.0",
+    "htmlparser2": "^12.0.0",
+    "ignore": "^7.0.6",
+    "tree-sitter-python": "^0.25.0",
+    "tree-sitter-typescript": "^0.23.2",
+    "web-tree-sitter": "^0.26.10",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/diff": "^7.0.0",
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  }
+}
