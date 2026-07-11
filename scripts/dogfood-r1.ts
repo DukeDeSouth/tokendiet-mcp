@@ -1,5 +1,5 @@
 /**
- * R1 replay: agent planning session (reads + one test run).
+ * R1 replay: M7 planning session (reads + one test run).
  * Run: npm run dogfood:r1
  */
 import {
@@ -33,7 +33,7 @@ async function main() {
   ops.push(await benchRun(ctx, 'npm test 2>&1 | tail -n 30', 'run npm test'));
   ops.push(await benchRead(ctx, 'docs/FIX_PLAN.md', 're-read FIX_PLAN.md'));
 
-  const result = summarize('R1-agent-planning-v2', ops, ctx);
+  const result = summarize('R1-m7-planning-v2', ops, ctx);
   console.log(JSON.stringify(result, null, 2));
 }
 

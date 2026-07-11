@@ -12,7 +12,11 @@ const ROOT = join(fileURLToPath(import.meta.url), '..', '..');
 const outArg = process.argv.indexOf('--out');
 const OUT = outArg >= 0 ? process.argv[outArg + 1] : join(ROOT, '..', '.publish-tokendiet-mcp');
 
-const EXCLUDE_DOCS = new Set(['FIX_PLAN.md', 'SPRINT2_PLAN.md', 'SPRINT3_PLAN.md']);
+const EXCLUDE_DOCS = new Set([
+  'FIX_PLAN.md',
+  'SPRINT2_PLAN.md',
+  'SPRINT3_PLAN.md',
+]); // internal: explain *how* M7 works — never publish
 
 function copyDir(src, dest) {
   cpSync(src, dest, { recursive: true });

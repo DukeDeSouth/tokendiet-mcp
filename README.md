@@ -1,6 +1,6 @@
 # TokenDiet MCP
 
-TokenDiet is a local MCP server that compresses file reads, command output, search hits, and fetched web pages **before** they enter the agent context. It uses deterministic transforms (outline, log dedup, snippet caps) and a safety verifier that rolls back when compression would drop protected content or fail to shrink the payload. Token counts use a real BPE encoder (`o200k_base` by default), not character guesses.
+TokenDiet is a local MCP server that compresses file reads, command output, search hits, and fetched web pages **before** they enter the agent context. It uses deterministic transforms (outline, log dedup, snippet caps) and a safety verifier that rolls back when compression would drop protected content or fail to shrink the payload. Token counts use a real BPE encoder (`o200k_base` by default), not character guesses. Dogfood benchmarks include real M7 agent sessions; internal sprint docs are not published.
 
 This only helps when the agent gets data **through** TokenDiet tools. If built-in Read or Bash already loaded the full text into context, calling compress afterward cannot undo that cost.
 

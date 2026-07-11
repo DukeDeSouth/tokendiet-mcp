@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * Disclosure lint for publishable surfaces (HANDOFF §8 + DISCLOSURE_BOUNDARY).
- * Fails on internal methodology terms that must not appear in public artifacts.
+ * Disclosure lint for publishable surfaces.
+ * Blocks terms that reveal *how* internal methodology works (ANIR, trap checker, tool names).
+ * "M7" as attribution is fine; sprint/internal docs stay out of the publish tree.
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -13,8 +14,6 @@ const SCAN_DIRS = ['src', 'templates', 'benchmarks', 'scripts'];
 const SCAN_FILES = ['README.md', 'LICENSE', 'package.json', 'docs/TOKENIZER.md'];
 
 const BANNED = [
-  { re: /(?<![./\w])M7(?![\w/])/i, label: 'M7' },
-  { re: /\bM7MCP\b/i, label: 'M7MCP' },
   { re: /\bANIR\b/i, label: 'ANIR' },
   { re: /trap checker/i, label: 'trap checker' },
   { re: /\bmcp_m7\b/i, label: 'mcp_m7' },
@@ -22,6 +21,8 @@ const BANNED = [
   { re: /\breflection gate\b/i, label: 'reflection gate' },
   { re: /\b7\/7\b.*\bcycle\b/i, label: '7/7 cycle' },
   { re: /\bHive\b.*\bconsensus\b/i, label: 'Hive consensus' },
+  { re: /\bDCCE\b/i, label: 'DCCE' },
+  { re: /\bINTAKE\b.*\bDISCOVERY\b.*\bARCHITECTURE\b/i, label: 'M7 phase sequence' },
 ];
 
 const SKIP = new Set(['check-disclosure.mjs', 'package-lock.json']);
