@@ -68,3 +68,12 @@ export function toCompressionWire(c: Compression, ref?: string): CompressionWire
   if (ref !== undefined) wire.ref = ref;
   return wire;
 }
+
+/** Omitted payload details on compressed read responses. */
+export interface ReadOmittedWire {
+  bodies?: boolean;
+  annotations?: number;
+  urls?: number;
+}
+
+export type AnnotationsIncludedWire = boolean | 'partial';

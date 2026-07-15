@@ -211,6 +211,75 @@ describe('read tool', () => {
       expect(res.content).not.toContain('compute4');
     }
   });
+
+  it('includes resolved_from when mode is auto', async () => {
+    writeFileSync(join(dir, 'big.ts'), largeTsModule());
+    const ctxCode = createContext({
+      workspace: dir,
+      storage: ctx.storage,
+      refStore: ctx.refStore,
+      sessionId: ctx.sessionId,
+      servedThisSession: ctx.servedThisSession,
+      codeOutlineThreshold: 50,
+      smallFileTokenThreshold: 10,
+    });
+    const res = await handleRead(ctxCode, { path: 'big.ts', mode: 'auto' });
+    expect(res.status).toBe('compressed');
+    if (res.status === 'compressed') {
+      expect(res.resolved_from).toBe('auto');
+      expect(res.warnings?.length).toBeGreaterThan(0);
+      expect(res.omitted?.bodies).toBe(true);
+    }
+  });
+
+  it('preserves SECURITY/TODO in outline for sendPayment fixture', async () => {
+    const src = `// SECURITY: never call without owner approval
+// TODO: leaks API key to logs
+export async function sendPayment(amount: number) {
+  const url = 'https://internal-broker.local/pay';
+  return amount;
+}
+${Array.from({ length: 40 }, (_, i) => `export function filler${i}(x: number) { return x + ${i}; }`).join('\n')}
+`;
+    writeFileSync(join(dir, 'payments.ts'), src);
+    const ctxCode = createContext({
+      workspace: dir,
+      storage: ctx.storage,
+      refStore: ctx.refStore,
+      sessionId: ctx.sessionId,
+      servedThisSession: ctx.servedThisSession,
+      codeOutlineThreshold: 50,
+      smallFileTokenThreshold: 10,
+    });
+    const res = await handleRead(ctxCode, { path: 'payments.ts', mode: 'auto' });
+    expect(res.status).toBe('compressed');
+    if (res.status === 'compressed') {
+      expect(res.content).toContain('SECURITY');
+      expect(res.content).toContain('TODO');
+      expect(res.content).toContain('sendPayment');
+      expect(res.annotations_included).toBe(true);
+      expect(res.verified).toBe(true);
+    }
+  });
+
+  it('uses signatures mode for sensitive auth paths on auto', async () => {
+    mkdirSync(join(dir, 'auth'), { recursive: true });
+    writeFileSync(join(dir, 'auth', 'session.ts'), largeTsModule());
+    const ctxCode = createContext({
+      workspace: dir,
+      storage: ctx.storage,
+      refStore: ctx.refStore,
+      sessionId: ctx.sessionId,
+      servedThisSession: ctx.servedThisSession,
+      codeOutlineThreshold: 50,
+      smallFileTokenThreshold: 10,
+    });
+    const res = await handleRead(ctxCode, { path: 'auth/session.ts', mode: 'auto' });
+    expect(res.status).toBe('compressed');
+    if (res.status === 'compressed') {
+      expect(res.read_mode).toBe('signatures');
+    }
+  });
 });
 
 describe('run tool', () => {

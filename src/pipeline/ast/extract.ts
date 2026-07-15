@@ -3,9 +3,10 @@ import { astLanguageForExtension } from './lang.js';
 import { extractPythonDeclarations } from './lang/python.js';
 import { extractTypeScriptDeclarations } from './lang/typescript.js';
 import { withParsedTree } from './parser.js';
-import { renderOutline } from './render.js';
+import { renderOutline, renderOutlineWithAnnotations } from './render.js';
 import { findOutlineItem } from './symbols.js';
 import type { CodeOutlineMode, ExtractionResult } from './types.js';
+import type { AnnotationExtraction } from '../annotations.js';
 
 export type { CodeOutlineMode, ExtractionResult, OutlineItem } from './types.js';
 export { astLanguageForExtension } from './lang.js';
@@ -39,6 +40,7 @@ export function renderCodeViewFromExtraction(
   extracted: ExtractionResult,
   mode: CodeOutlineMode,
   symbol?: string,
+  annotations?: AnnotationExtraction,
 ): string {
   const { imports, items } = extracted;
 
@@ -51,6 +53,10 @@ export function renderCodeViewFromExtraction(
       throw new Error(`symbol not found: ${symbol}`);
     }
     return source.slice(item.startIndex, item.endIndex);
+  }
+
+  if (annotations && annotations.critical.length > 0) {
+    return renderOutlineWithAnnotations(imports, items, mode, annotations);
   }
 
   return renderOutline(imports, items, mode);

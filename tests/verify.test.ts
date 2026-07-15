@@ -172,4 +172,39 @@ describe('verify code v2', () => {
     const res = verify(original, compressed, 'code');
     expect(res.failures.some((f) => f.rule === 'urls-preserved')).toBe(true);
   });
+
+  it('enforces critical-annotations-preserved when blocks provided', () => {
+    const compressed = 'export function sendPayment(amount: number) [3–6]';
+    const blocks = [
+      {
+        lines: ['// SECURITY: never call without owner approval'],
+        startLine: 1,
+        endLine: 1,
+        tags: ['SECURITY'],
+      },
+    ];
+    const fail = verify('// SECURITY: never call\nexport async function sendPayment() {}', compressed, 'code', 'o200k_base', {
+      codeMode: 'outline',
+      outlineItems: [],
+      criticalAnnotations: blocks,
+    });
+    expect(fail.pass).toBe(false);
+    expect(fail.failures.some((f) => f.rule === 'critical-annotations-preserved')).toBe(true);
+
+    const original =
+      '// SECURITY: never call without owner approval\n' +
+      `${Array(80).fill('// padding line for token budget').join('\n')}\n` +
+      'export async function sendPayment(amount: number) { return 1; }\n';
+    const compressedWithAnnotations =
+      '# file-warnings\n// SECURITY: never call without owner approval\n\n' +
+      'export function sendPayment(amount: number) [82–82]\n' +
+      'hint: expand(ref)';
+
+    const ok = verify(original, compressedWithAnnotations, 'code', 'o200k_base', {
+      codeMode: 'outline',
+      outlineItems: [],
+      criticalAnnotations: blocks,
+    });
+    expect(ok.pass).toBe(true);
+  });
 });

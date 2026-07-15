@@ -1,4 +1,5 @@
 import type { CodeOutlineMode, OutlineItem } from './types.js';
+import type { AnnotationExtraction } from '../annotations.js';
 
 const OUTLINE_HINT =
   'hint: expand(ref) for full file, read(mode=symbol, symbol="Name") for a single definition';
@@ -40,6 +41,58 @@ export function renderOutline(
   for (const item of items) {
     lines.push(formatItem(item, mode));
   }
+  lines.push('');
+  lines.push(OUTLINE_HINT);
+  return lines.join('\n');
+}
+
+function formatAnnotationLines(blocks: { lines: string[] }[], indent = ''): string[] {
+  const out: string[] = [];
+  for (const block of blocks) {
+    for (const line of block.lines) {
+      out.push(`${indent}${line.trim()}`);
+    }
+  }
+  return out;
+}
+
+/** Outline/signatures with security-critical comment blocks injected. */
+export function renderOutlineWithAnnotations(
+  imports: string[],
+  items: OutlineItem[],
+  mode: Exclude<CodeOutlineMode, 'symbol'>,
+  extraction: AnnotationExtraction,
+): string {
+  const lines: string[] = [];
+
+  if (extraction.fileLevel.length > 0) {
+    lines.push('# file-warnings');
+    lines.push(...formatAnnotationLines(extraction.fileLevel));
+    lines.push('');
+  }
+
+  if (imports.length > 0) {
+    lines.push('# imports');
+    lines.push(`import: ${imports.join(', ')}`);
+    lines.push('');
+  }
+
+  lines.push(`# ${mode}`);
+  for (const item of items) {
+    const range = `[${item.startLine}–${item.endLine}]`;
+    const sig = displaySignature(item);
+    if (mode === 'signatures' && item.doc) {
+      lines.push(item.doc);
+      lines.push(`${sig} ${range}`);
+    } else {
+      lines.push(`${sig} ${range}`);
+    }
+    const symBlocks = extraction.bySymbol.get(item.name);
+    if (symBlocks?.length) {
+      lines.push(...formatAnnotationLines(symBlocks, '  '));
+    }
+  }
+
   lines.push('');
   lines.push(OUTLINE_HINT);
   return lines.join('\n');

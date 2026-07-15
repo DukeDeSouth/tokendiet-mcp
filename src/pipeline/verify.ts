@@ -1,5 +1,6 @@
 import type { ContentType, Encoding, VerifyFailure, VerifyResult } from '../types.js';
 import type { OutlineItem } from './ast/types.js';
+import type { AnnotationBlock } from './annotations.js';
 import { countTokens } from '../tokenize/counter.js';
 import { normalizeLine } from './normalize.js';
 
@@ -30,6 +31,7 @@ const LINE_RANGE_RE = /\[(\d+)[–-](\d+)\]/g;
 export interface VerifyOptions {
   codeMode?: 'outline' | 'signatures' | 'symbol';
   outlineItems?: OutlineItem[];
+  criticalAnnotations?: AnnotationBlock[];
 }
 
 function errorLines(content: string): string[] {
@@ -103,6 +105,23 @@ function verifyCodeOutline(
   return failures;
 }
 
+function verifyCriticalAnnotations(compressed: string, blocks: AnnotationBlock[]): VerifyFailure[] {
+  const failures: VerifyFailure[] = [];
+  for (const block of blocks) {
+    for (const line of block.lines) {
+      const norm = line.trim();
+      if (norm.length === 0 || norm.startsWith('[')) continue;
+      if (!compressed.includes(norm)) {
+        failures.push({
+          rule: 'critical-annotations-preserved',
+          detail: `missing annotation line: "${norm.slice(0, 100)}"`,
+        });
+      }
+    }
+  }
+  return failures;
+}
+
 export function verify(
   original: string,
   compressed: string,
@@ -158,6 +177,10 @@ export function verify(
     options.outlineItems
   ) {
     failures.push(...verifyCodeOutline(original, compressed, options.outlineItems));
+  }
+
+  if (options.criticalAnnotations?.length) {
+    failures.push(...verifyCriticalAnnotations(compressed, options.criticalAnnotations));
   }
 
   if (countTokens(compressed, encoding) >= countTokens(original, encoding)) {

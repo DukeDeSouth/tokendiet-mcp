@@ -1,6 +1,6 @@
 {
   "name": "tokendiet-mcp",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "description": "Local MCP server that compresses file reads, command outputs and web content before they enter the agent context — with an honest BPE token counter and a safety verifier.",
   "license": "MIT",
   "type": "module",
@@ -29,10 +29,12 @@
     "dogfood:r3": "tsx scripts/dogfood-r3.ts",
     "dogfood:r4": "tsx scripts/dogfood-r4.ts",
     "dogfood:r5": "tsx scripts/dogfood-r5.ts",
+    "dogfood:r6": "tsx scripts/dogfood-r6-security.ts",
     "dogfood:sf": "tsx scripts/dogfood-sf.ts",
     "dogfood:v3-gate": "npm run build && tsx scripts/dogfood-v3-gate.ts",
     "dogfood:all": "npm run build && npm run dogfood:synthetic && npm run dogfood:r2 && npm run dogfood:r1 && npm run dogfood:r3 && npm run dogfood:r4 && npm run dogfood:r5 && npm run dogfood:sf",
     "check-disclosure": "node scripts/check-disclosure.mjs",
+    "prepublishOnly": "npm run build && npm test && npm run check-disclosure",
     "postinstall": "npm rebuild better-sqlite3 && node scripts/copy-tree-sitter-wasm.mjs"
   },
   "dependencies": {

@@ -1,5 +1,6 @@
 import type { AppContext } from '../context.js';
 import type { ServedFile } from '../context.js';
+import { isSensitivePath } from '../lib/sensitivePath.js';
 import { astLanguageForExtension } from '../pipeline/ast/lang.js';
 import { detectType } from '../pipeline/detectType.js';
 import type { ReadInput } from './schemas.js';
@@ -27,6 +28,7 @@ export function isAstReadMode(mode: ResolvedReadMode): mode is 'outline' | 'sign
 export function resolveReadMode(
   input: ReadInput,
   ctx: AppContext,
+  relPath: string,
   ext: string,
   tokensIn: number,
 ): { mode: ResolvedReadMode; symbol?: string } {
@@ -41,7 +43,10 @@ export function resolveReadMode(
 
   // auto
   if (detectType('x', ext) === 'code' && tokensIn >= ctx.codeOutlineThreshold) {
-    if (astLanguageForExtension(ext)) return { mode: 'outline' };
+    if (astLanguageForExtension(ext)) {
+      if (isSensitivePath(relPath)) return { mode: 'signatures' };
+      return { mode: 'outline' };
+    }
   }
   if (tokensIn < ctx.smallFileTokenThreshold) return { mode: 'full' };
   return { mode: 'plain' };

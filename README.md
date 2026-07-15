@@ -4,6 +4,8 @@ TokenDiet is a local MCP server that compresses file reads, command output, sear
 
 This only helps when the agent gets data **through** TokenDiet tools. If built-in Read or Bash already loaded the full text into context, calling compress afterward cannot undo that cost.
 
+**Outline mode** returns signatures plus critical comments (`SECURITY`, `TODO`, …) when detected. `verified: true` means structure verified — check `warnings` and `omitted.bodies` before editing code. Use `expand(ref)` or `mode=full` for audits.
+
 ## Install (from source)
 
 Requires **Node.js 20+** and build tools for `better-sqlite3` (native addon).

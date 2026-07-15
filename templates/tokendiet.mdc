@@ -11,9 +11,12 @@ Use TokenDiet MCP tools instead of built-in Read, Grep, Bash, or raw fetch when 
 ## Reading code
 
 1. **Start with `read` in `mode=outline` or `mode=auto`** for large source files (TypeScript, Python). Outline shows signatures and line ranges without full bodies.
-2. Drill into a single function with **`read` `mode=symbol`** and `symbol="Name"` or `symbol="Class.method"`.
-3. Escalate to **`mode=full`** only when you need the entire file.
-4. Call **`expand(ref)`** when the compressed view is not enough.
+2. **`verified: true` means structure verified** (signatures/exports), not that you saw the entire file. Check `warnings` and `omitted.bodies` in the response.
+3. For **security review or audit**, use `mode=full` or `mode=symbol` on specific functions — do not rely on outline alone.
+4. If `omitted.bodies` or security warnings appear, call **`expand(ref)`** before destructive edits.
+5. Drill into a single function with **`read` `mode=symbol`** and `symbol="Name"` or `symbol="Class.method"`.
+6. Escalate to **`mode=full`** only when you need the entire file.
+7. Call **`expand(ref)`** when the compressed view is not enough.
 
 ## Search and web
 

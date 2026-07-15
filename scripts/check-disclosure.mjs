@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Disclosure lint for publishable surfaces.
- * Blocks terms that reveal *how* internal methodology works (ANIR, trap checker, tool names).
+ * Blocks terms that reveal *how* internal methodology works (tools, phases, internal docs).
  * "M7" as attribution is fine; sprint/internal docs stay out of the publish tree.
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
@@ -17,15 +17,28 @@ const BANNED = [
   { re: /\bANIR\b/i, label: 'ANIR' },
   { re: /trap checker/i, label: 'trap checker' },
   { re: /\bmcp_m7\b/i, label: 'mcp_m7' },
+  { re: /\bmcp_m7_/i, label: 'mcp_m7_ tool prefix' },
   { re: /\bfog of war\b/i, label: 'fog of war' },
   { re: /\breflection gate\b/i, label: 'reflection gate' },
   { re: /\b7\/7\b.*\bcycle\b/i, label: '7/7 cycle' },
   { re: /\bHive\b.*\bconsensus\b/i, label: 'Hive consensus' },
   { re: /\bDCCE\b/i, label: 'DCCE' },
   { re: /\bINTAKE\b.*\bDISCOVERY\b.*\bARCHITECTURE\b/i, label: 'M7 phase sequence' },
+  { re: /\bFIX_PLAN\.md\b/i, label: 'FIX_PLAN.md' },
+  { re: /\bSPRINT\d*_PLAN\.md\b/i, label: 'SPRINT_PLAN' },
+  { re: /\bHANDOFF\b/i, label: 'HANDOFF' },
+  { re: /m7-cycles\//i, label: 'm7-cycles path' },
+  { re: /\bcycles\/(?:sprint|p\d)/i, label: 'internal cycles path' },
+  { re: /\brepentance\b/i, label: 'repentance' },
+  { re: /\blitany\b/i, label: 'litany' },
+  { re: /\bhive_coordinator\b/i, label: 'hive_coordinator' },
+  { re: /\bknowledge_hub\b/i, label: 'knowledge_hub' },
+  { re: /\bIMPACT_ANALYSIS\.md\b/i, label: 'IMPACT_ANALYSIS' },
+  { re: /\bSOLUTION_PLAN\.md\b/i, label: 'SOLUTION_PLAN' },
+  { re: /\bmemory-bank\//i, label: 'memory-bank path' },
 ];
 
-const SKIP = new Set(['check-disclosure.mjs', 'package-lock.json']);
+const SKIP = new Set(['check-disclosure.mjs', 'publish-to-github.mjs', 'package-lock.json']);
 
 function walk(dir, out = []) {
   for (const name of readdirSync(dir)) {

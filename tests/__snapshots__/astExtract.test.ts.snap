@@ -2,14 +2,16 @@
 
 exports[`TypeScript AST extractors > outline snapshot for read.ts 1`] = `
 "# imports
-import: node:fs, node:path, ../context.js, ../lib/fileHash.js, ../lib/textDiff.js, ../lib/workspace.js, ../pipeline/ast/lang.js, ../pipeline/ast/extract.js, ../pipeline/pipeline.js, ../pipeline/verify.js, ../tokenize/counter.js, ../types.js, ./schemas.js, ./readMode.js
+import: node:fs, node:path, ../context.js, ../lib/fileHash.js, ../lib/textDiff.js, ../lib/workspace.js, ../pipeline/ast/lang.js, ../pipeline/ast/extract.js, ../pipeline/annotations.js, ../pipeline/pipeline.js, ../pipeline/verify.js, ../tokenize/counter.js, ../types.js, ./schemas.js, ./readMode.js
 
 # outline
-function markServed( ctx: AppContext, absPath: string, hash: string, ref: string, mode: ResolvedReadMode, symbol?: string, ): void [21–35]
-function compressionPct(tokensIn: number, saved: number): number [37–39]
-async function tryServeAst( ctx: AppContext, absPath: string, content: string, fileHash: string, tokensIn: number, ext: string, mode: ResolvedReadMode, symbol?: string, ) [41–107]
-function serveNewContent( ctx: AppContext, absPath: string, content: string, fileHash: string, tokensIn: number, ext: string, mode: ResolvedReadMode, symbol?: string, ) [109–163]
-export async function handleRead(ctx: AppContext, input: ReadInput) [165–227]
+function markServed( ctx: AppContext, absPath: string, hash: string, ref: string, mode: ResolvedReadMode, symbol?: string, ): void [28–42]
+function compressionPct(tokensIn: number, saved: number): number [44–46]
+function capFileWarnings( output: string, encoding: AppContext['encoding'], ): { output: string; partial: boolean; omittedAnnotations: number } [48–69]
+function buildAstMetadata( inputMode: ReadInput['mode'], mode: ResolvedReadMode, extraction: ReturnType<typeof extractAnnotations>, partial: boolean, omittedAnnotations: number, ): { warnings: string[]; omitted: ReadOmittedWire; annotations_included: AnnotationsIncludedWire; resolved_from?: 'auto'; } [71–113]
+async function tryServeAst( ctx: AppContext, absPath: string, content: string, fileHash: string, tokensIn: number, ext: string, mode: ResolvedReadMode, inputMode: ReadInput['mode'], symbol?: string, ) [115–210]
+function serveNewContent( ctx: AppContext, absPath: string, content: string, fileHash: string, tokensIn: number, ext: string, mode: ResolvedReadMode, symbol?: string, ) [212–266]
+export async function handleRead(ctx: AppContext, input: ReadInput) [268–331]
 
 hint: expand(ref) for full file, read(mode=symbol, symbol="Name") for a single definition"
 `;
