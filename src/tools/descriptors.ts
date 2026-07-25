@@ -1,7 +1,7 @@
 import {
-  ExpandInputSchema,
+  ExpandInputJsonSchema,
   FetchInputSchema,
-  ReadInputSchema,
+  ReadInputJsonSchema,
   RunInputSchema,
   SearchInputSchema,
   StatsInputSchema,
@@ -15,8 +15,8 @@ export const TOOL_DEFS = [
   {
     name: 'read',
     description:
-      'Read a workspace file with compression. Start with mode=outline (or auto) for large code files; mode=symbol+symbol for one definition; mode=full to escalate. Returns compression.saved and ref for expand().',
-    inputSchema: zodToJsonSchema(ReadInputSchema.shape),
+      'Read workspace file(s). Pass targets[] (up to 16 paths) in one call. mode=auto uses outline+ for large code when net-positive; full below ~3K tokens.',
+    inputSchema: zodToJsonSchema(ReadInputJsonSchema.shape),
   },
   {
     name: 'run',
@@ -39,12 +39,13 @@ export const TOOL_DEFS = [
   {
     name: 'expand',
     description:
-      'Retrieve full uncompressed content for a ref returned by read, run, search, or fetch.',
-    inputSchema: zodToJsonSchema(ExpandInputSchema.shape),
+      'Retrieve full uncompressed content for ref(s) from read, run, search, or fetch. Pass refs[] for batch expand.',
+    inputSchema: zodToJsonSchema(ExpandInputJsonSchema.shape),
   },
   {
     name: 'stats',
-    description: 'Cumulative token savings for this session and month (honest BPE) with USD estimate.',
+    description:
+      'Session token economics: saved tokens, follow_up_rate, net_tokens_estimate (saved minus turn cost), and USD. Call at end of session only.',
     inputSchema: zodToJsonSchema(StatsInputSchema.shape),
   },
 ] as const;

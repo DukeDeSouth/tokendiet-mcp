@@ -1,0 +1,18 @@
+{
+  "version": "e2e-v1",
+  "date": "2026-07-25",
+  "N-project-study": {
+    "turns_ratio_max": 1.0,
+    "billed_cost_ratio_max": 1.0,
+    "follow_up_rate_max": 0.1,
+    "quality_min_score": 0.8
+  },
+  "H-corpus": {
+    "billed_cost_ratio_max": 0.8
+  },
+  "user_ab_regression": {
+    "turns_ratio_max": 1.0,
+    "billed_cost_ratio_max": 1.0,
+    "document_current_v1_fail": true
+  }
+}

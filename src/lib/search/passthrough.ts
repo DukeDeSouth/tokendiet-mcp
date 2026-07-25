@@ -1,4 +1,4 @@
-/** Raw rg baseline below this BPE size is returned unchanged (Sprint 3.2 A2). */
+/** Raw rg baseline below this BPE size is returned unchanged. */
 export const SEARCH_PASSTHROUGH_TOKEN_THRESHOLD = 300;
 
 export function shouldPassthroughSearchBaseline(tokensIn: number): boolean {

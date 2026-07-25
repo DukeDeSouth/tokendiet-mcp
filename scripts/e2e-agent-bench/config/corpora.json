@@ -1,0 +1,23 @@
+{
+  "N-project-study": {
+    "id": "N-project-study",
+    "label": "Neutral — project exploration (user A/B scenario)",
+    "prompt_file": "corpora/N-project-study/prompt.md",
+    "checklist_file": "corpora/N-project-study/checklist.json",
+    "exploration_files": "corpora/N-project-study/exploration-files.json",
+    "fixture_baseline": "fixtures/user-ab-baseline.json",
+    "fixture_tokendiet_v1": "fixtures/user-ab-tokendiet.json"
+  },
+  "H-test-logs": {
+    "id": "H-test-logs",
+    "label": "Heavy — npm test log compression",
+    "dogfood_script": "dogfood-r3.ts",
+    "expected_saved_pct_min": 30
+  },
+  "H-web-fetch": {
+    "id": "H-web-fetch",
+    "label": "Heavy — live fetch (optional network)",
+    "dogfood_script": "dogfood-sf.ts",
+    "optional": true
+  }
+}

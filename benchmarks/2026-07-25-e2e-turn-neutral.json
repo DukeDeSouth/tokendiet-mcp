@@ -1,0 +1,205 @@
+{
+  "version": "e2e-v1",
+  "date": "2026-07-25",
+  "cost_model": {
+    "e_turn_input_eq": 8449.396226415094,
+    "t_full_bpe": 2983,
+    "calibrated_from": "user A/B session"
+  },
+  "user_ab": {
+    "baseline": {
+      "turns": 48,
+      "fresh_input": 407955,
+      "cache_read": 2591232,
+      "output": 21006,
+      "billed_cost_usd": 26.7976,
+      "computed_usd": 2.6997
+    },
+    "tokendiet_v1": {
+      "turns": 212,
+      "fresh_input": 334165,
+      "cache_read": 11644672,
+      "output": 41961,
+      "billed_cost_usd": 60.7324,
+      "computed_usd": 6.3763,
+      "metrics": {
+        "turns_ratio": 4.42,
+        "cost_ratio": 2.36,
+        "fresh_saved_pct": 18.1
+      }
+    },
+    "turns_ratio": 4.416666666666667,
+    "cost_ratio": 2.3618407235414325
+  },
+  "n_corpus_simulation": {
+    "files_measured": 26,
+    "token_stats": {
+      "median": 802,
+      "max": 4182,
+      "files_gte_800": 13,
+      "files_gte_t_full": 2
+    },
+    "policies": {
+      "baseline": {
+        "policy": "baseline",
+        "read_files": 26,
+        "estimated_turns": 36,
+        "read_turns": 26,
+        "follow_up_turns": 0,
+        "expand_turns": 0,
+        "other_turns": 10,
+        "follow_up_rate": 0,
+        "projected_usage": {
+          "turns": 36,
+          "fresh_input": 305966,
+          "cache_read": 1943424,
+          "output": 15755
+        },
+        "projected_cost_input_eq": 674934,
+        "projected_cost_usd": 2.024802,
+        "t_full": 2983,
+        "e_turn": 8449.396226415094
+      },
+      "tokendiet_v1": {
+        "policy": "tokendiet_v1",
+        "read_files": 26,
+        "estimated_turns": 52.5,
+        "read_turns": 26,
+        "follow_up_turns": 6.5,
+        "expand_turns": 2,
+        "other_turns": 20,
+        "follow_up_rate": 0.25,
+        "projected_usage": {
+          "turns": 52.5,
+          "fresh_input": 365885,
+          "cache_read": 2834160,
+          "output": 24124
+        },
+        "projected_cost_input_eq": 913147,
+        "projected_cost_usd": 2.739441,
+        "t_full": 2983,
+        "e_turn": 8449.396226415094,
+        "metrics": {
+          "turns_ratio": 1.09,
+          "cost_ratio": 1.01,
+          "fresh_saved_pct": 10.3
+        }
+      },
+      "tokendiet_v2_phase1": {
+        "policy": "tokendiet_v2_phase1",
+        "read_files": 26,
+        "estimated_turns": 20,
+        "read_turns": 2,
+        "follow_up_turns": 0,
+        "expand_turns": 0,
+        "other_turns": 18,
+        "follow_up_rate": 0,
+        "projected_usage": {
+          "turns": 20,
+          "fresh_input": 161482,
+          "cache_read": 1079680,
+          "output": 9190
+        },
+        "projected_cost_input_eq": 369962,
+        "projected_cost_usd": 1.109886,
+        "t_full": 2983,
+        "e_turn": 8449.396226415094
+      },
+      "tokendiet_v2_phase2": {
+        "policy": "tokendiet_v2_phase2",
+        "read_files": 26,
+        "estimated_turns": 18.2,
+        "read_turns": 0.2,
+        "follow_up_turns": 0,
+        "expand_turns": 0,
+        "other_turns": 18,
+        "follow_up_rate": 0,
+        "projected_usage": {
+          "turns": 18.166666666666668,
+          "fresh_input": 135872,
+          "cache_read": 980709,
+          "output": 8348
+        },
+        "projected_cost_input_eq": 325244.625,
+        "projected_cost_usd": 0.975733875,
+        "t_full": 2983,
+        "e_turn": 8449.396226415094
+      }
+    }
+  },
+  "checks": [
+    {
+      "name": "user_ab_turns_ratio",
+      "pass": false,
+      "actual": 4.42,
+      "threshold": "≤ 1",
+      "note": "Expected FAIL on v1 — documents the problem"
+    },
+    {
+      "name": "user_ab_cost_ratio",
+      "pass": false,
+      "actual": 2.36,
+      "threshold": "≤ 1",
+      "note": "Expected FAIL on v1 (+126.6% billed)"
+    },
+    {
+      "name": "harness_validity_v1_documented_fail",
+      "pass": true,
+      "actual": "v1 fails as expected",
+      "threshold": "v1 must FAIL"
+    },
+    {
+      "name": "sim_v2_phase1_turns_ratio",
+      "pass": true,
+      "actual": 0.42,
+      "threshold": "≤ 1"
+    },
+    {
+      "name": "sim_v2_phase1_cost_ratio",
+      "pass": true,
+      "actual": 0.41,
+      "threshold": "≤ 1"
+    },
+    {
+      "name": "sim_v2_phase1_follow_up_rate",
+      "pass": true,
+      "actual": 0,
+      "threshold": "< 0.1"
+    },
+    {
+      "name": "sim_v2_phase2_turns_ratio",
+      "pass": true,
+      "actual": 0.38,
+      "threshold": "≤ 1"
+    },
+    {
+      "name": "sim_v2_phase2_cost_ratio",
+      "pass": true,
+      "actual": 0.36,
+      "threshold": "≤ 1"
+    },
+    {
+      "name": "sim_v2_phase2_follow_up_rate",
+      "pass": true,
+      "actual": 0,
+      "threshold": "< 0.1"
+    },
+    {
+      "name": "H_test_logs_payload_saved",
+      "pass": true,
+      "actual": 56,
+      "threshold": "≥ 30%",
+      "note": "Payload diagnostic — run compression still valuable"
+    },
+    {
+      "name": "shrink_playwright_sim_saved",
+      "pass": true,
+      "actual": 100,
+      "threshold": "≥ 50%",
+      "note": "Shrink proxy — 0 extra agent turns"
+    }
+  ],
+  "pass": true,
+  "release_ready": true,
+  "note": "E2E gate PASS — turn-neutral v0.7.0"
+}

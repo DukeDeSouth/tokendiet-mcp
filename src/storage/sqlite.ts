@@ -25,6 +25,7 @@ export interface StatsTotals {
   tokens_out: number;
   saved: number;
   calls: number;
+  follow_up_calls?: number;
 }
 
 const SCHEMA = `
@@ -61,10 +62,16 @@ export class Storage {
 
   /** Add session_id to existing DBs created before P0-3. */
   private migrateSessionStats(): void {
-    const cols = this.db.pragma('table_info(session_stats)') as { name: string }[];
+    let cols = this.db.pragma('table_info(session_stats)') as { name: string }[];
     if (!cols.some((c) => c.name === 'session_id')) {
       this.db.exec(
         `ALTER TABLE session_stats ADD COLUMN session_id TEXT NOT NULL DEFAULT 'legacy'`,
+      );
+    }
+    cols = this.db.pragma('table_info(session_stats)') as { name: string }[];
+    if (!cols.some((c) => c.name === 'is_follow_up')) {
+      this.db.exec(
+        `ALTER TABLE session_stats ADD COLUMN is_follow_up INTEGER NOT NULL DEFAULT 0`,
       );
     }
     this.db.exec(
@@ -98,25 +105,58 @@ export class Storage {
     tokensIn: number,
     tokensOut: number,
     saved: number,
+    opts: { is_follow_up?: boolean } = {},
   ): void {
     this.db
       .prepare(
-        'INSERT INTO session_stats (ts, session_id, tool, tokens_in, tokens_out, saved) VALUES (?, ?, ?, ?, ?, ?)',
+        'INSERT INTO session_stats (ts, session_id, tool, tokens_in, tokens_out, saved, is_follow_up) VALUES (?, ?, ?, ?, ?, ?, ?)',
       )
-      .run(new Date().toISOString(), sessionId, tool, tokensIn, tokensOut, saved);
+      .run(
+        new Date().toISOString(),
+        sessionId,
+        tool,
+        tokensIn,
+        tokensOut,
+        saved,
+        opts.is_follow_up ? 1 : 0,
+      );
+  }
+
+  private totalsFromRow(row: StatsTotals | undefined): StatsTotals {
+    return {
+      tokens_in: row?.tokens_in ?? 0,
+      tokens_out: row?.tokens_out ?? 0,
+      saved: row?.saved ?? 0,
+      calls: row?.calls ?? 0,
+      follow_up_calls: row?.follow_up_calls ?? 0,
+    };
+  }
+
+  getSessionFollowUpCount(sessionId: string): number {
+    const row = this.db
+      .prepare(
+        `SELECT COUNT(*) AS follow_up_calls
+         FROM session_stats
+         WHERE session_id = ? AND is_follow_up = 1`,
+      )
+      .get(sessionId) as { follow_up_calls: number };
+    return row.follow_up_calls;
   }
 
   getSessionTotals(sessionId: string): StatsTotals {
-    return this.db
-      .prepare(
-        `SELECT COALESCE(SUM(tokens_in), 0)  AS tokens_in,
-                COALESCE(SUM(tokens_out), 0) AS tokens_out,
-                COALESCE(SUM(saved), 0)      AS saved,
-                COUNT(*)                     AS calls
-         FROM session_stats
-         WHERE session_id = ?`,
-      )
-      .get(sessionId) as StatsTotals;
+    return this.totalsFromRow(
+      this.db
+        .prepare(
+          `SELECT COALESCE(SUM(tokens_in), 0)  AS tokens_in,
+                  COALESCE(SUM(tokens_out), 0) AS tokens_out,
+                  COALESCE(SUM(saved), 0)      AS saved,
+                  COUNT(*)                     AS calls,
+                  COALESCE(SUM(is_follow_up), 0) AS follow_up_calls
+           FROM session_stats
+           WHERE session_id = ?`,
+        )
+        .get(sessionId) as StatsTotals,
+    );
   }
 
   /** All processes and legacy rows — former misleading \`stats.session\`. */

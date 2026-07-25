@@ -1,5 +1,7 @@
 import { contentTypeForFetch, isBinaryContentType } from '../lib/fetch/contentType.js';
 import { safeFetch } from '../lib/fetch/http.js';
+import { evaluateCompressGate, estimateTransformSaved } from '../lib/compressGate.js';
+import { netEstimate } from '../lib/costModel.js';
 import { compress } from '../pipeline/pipeline.js';
 import { transformHtml } from '../pipeline/transforms/html.js';
 import { verifyHtml } from '../pipeline/verifyHtml.js';
@@ -27,7 +29,11 @@ export async function handleFetch(ctx: AppContext, input: FetchInput) {
       content: fetched.body,
       ref,
       verified: true,
-      compression: toCompressionWire({ tokensIn, tokensOut: tokensIn, saved: 0, savedPct: 0 }, ref),
+      compression: toCompressionWire(
+        { tokensIn, tokensOut: tokensIn, saved: 0, savedPct: 0 },
+        ref,
+        { net_estimate: 0 },
+      ),
     };
   }
 
@@ -40,6 +46,29 @@ export async function handleFetch(ctx: AppContext, input: FetchInput) {
   const type = contentTypeForFetch(fetched.contentType, fetched.body);
 
   if (type === 'html') {
+    const estimatedSaved = estimateTransformSaved(tokensIn, 'html');
+    const gate = evaluateCompressGate(tokensIn, estimatedSaved, false, ctx.costModel);
+    if (gate.passthrough) {
+      ctx.storage.recordStat(ctx.sessionId, 'fetch', tokensIn, tokensIn, 0);
+      return {
+        url: fetched.url,
+        status: fetched.status,
+        content_type: fetched.contentType,
+        mode: 'auto' as const,
+        content: fetched.body,
+        verified: true,
+        ref,
+        compression: toCompressionWire(
+          { tokensIn, tokensOut: tokensIn, saved: 0, savedPct: 0 },
+          ref,
+          {
+            net_estimate: gate.net_estimate,
+            ...(gate.reason !== undefined && { passthrough_reason: gate.reason }),
+          },
+        ),
+      };
+    }
+
     const transformed = transformHtml(fetched.body);
     let content = transformed.output;
     let verified = true;
@@ -73,6 +102,31 @@ export async function handleFetch(ctx: AppContext, input: FetchInput) {
           savedPct: tokensIn ? Math.round((saved / tokensIn) * 100) : 0,
         },
         ref,
+        { net_estimate: netEstimate(saved, false, ctx.costModel) },
+      ),
+    };
+  }
+
+  const profile = type === 'json' ? 'json' : type === 'log' ? 'log' : 'plain';
+  const estimatedSaved = estimateTransformSaved(tokensIn, profile);
+  const gate = evaluateCompressGate(tokensIn, estimatedSaved, false, ctx.costModel);
+  if (gate.passthrough) {
+    ctx.storage.recordStat(ctx.sessionId, 'fetch', tokensIn, tokensIn, 0);
+    return {
+      url: fetched.url,
+      status: fetched.status,
+      content_type: type,
+      mode: 'auto' as const,
+      content: fetched.body,
+      verified: true,
+      ref,
+      compression: toCompressionWire(
+        { tokensIn, tokensOut: tokensIn, saved: 0, savedPct: 0 },
+        ref,
+        {
+          net_estimate: gate.net_estimate,
+          ...(gate.reason !== undefined && { passthrough_reason: gate.reason }),
+        },
       ),
     };
   }
@@ -106,6 +160,7 @@ export async function handleFetch(ctx: AppContext, input: FetchInput) {
         savedPct: tokensIn ? Math.round((saved / tokensIn) * 100) : 0,
       },
       result.ref ?? ref,
+      { net_estimate: netEstimate(saved, false, ctx.costModel) },
     ),
   };
 }

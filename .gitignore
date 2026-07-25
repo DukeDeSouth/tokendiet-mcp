@@ -1,5 +1,8 @@
 node_modules/
 dist/
+.test-home/
+.td/
+.dogfood-td/
 *.log
 .DS_Store
 .data/

@@ -1,0 +1,23 @@
+{
+  "min_score": 0.8,
+  "facts": [
+    { "id": "purpose", "patterns": ["compress", "context", "mcp"], "weight": 1 },
+    { "id": "node", "patterns": ["node", "node.js", "nodejs"], "weight": 1 },
+    { "id": "typescript", "patterns": ["typescript", "\\.ts"], "weight": 1 },
+    { "id": "tree-sitter", "patterns": ["tree-sitter", "tree sitter", "treesitter"], "weight": 1 },
+    { "id": "o200k", "patterns": ["o200k", "o200k_base", "gpt-tokenizer"], "weight": 1 },
+    { "id": "tools-read", "patterns": ["read"], "weight": 0.5 },
+    { "id": "tools-run", "patterns": ["run"], "weight": 0.5 },
+    { "id": "tools-search", "patterns": ["search"], "weight": 0.5 },
+    { "id": "tools-fetch", "patterns": ["fetch"], "weight": 0.5 },
+    { "id": "tools-expand", "patterns": ["expand"], "weight": 0.5 },
+    { "id": "tools-stats", "patterns": ["stats"], "weight": 0.5 },
+    { "id": "six-tools", "patterns": ["6 tool", "six tool"], "weight": 1 },
+    { "id": "verify", "patterns": ["verify", "verifier", "rollback"], "weight": 1 },
+    { "id": "vitest", "patterns": ["vitest", "npm test"], "weight": 1 },
+    { "id": "dogfood", "patterns": ["dogfood", "benchmark"], "weight": 1 },
+    { "id": "wasm", "patterns": ["wasm", "web-tree-sitter"], "weight": 0.5 },
+    { "id": "stdio", "patterns": ["stdio"], "weight": 0.5 },
+    { "id": "sqlite", "patterns": ["sqlite", "better-sqlite3"], "weight": 0.5 }
+  ]
+}

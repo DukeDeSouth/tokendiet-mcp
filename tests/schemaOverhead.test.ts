@@ -20,10 +20,14 @@ describe('tool schema overhead', () => {
     ]);
   });
 
-  it('read schema documents outline and symbol modes', () => {
+  it('read schema documents targets batch and symbol modes', () => {
     const read = toolListPayload().find((t) => t.name === 'read');
-    const schema = read?.inputSchema as { properties?: Record<string, { description?: string }> };
-    expect(read?.description).toContain('outline');
-    expect(schema?.properties?.mode?.description).toContain('symbol');
+    const schema = read?.inputSchema as {
+      properties?: Record<string, { description?: string; type?: string }>;
+    };
+    expect(read?.description).toContain('targets[]');
+    expect(schema?.properties?.targets?.type).toBe('array');
+    const modeEnum = (schema?.properties?.mode as { enum?: string[] })?.enum;
+    expect(modeEnum).toContain('symbol');
   });
 });

@@ -1,0 +1,41 @@
+{
+  "description": "Files a typical agent reads during N-corpus project study on tokendiet-mcp",
+  "docs": [
+    "README.md",
+    "package.json",
+    "docs/TOKENIZER.md"
+  ],
+  "src_pipeline": [
+    "src/pipeline/pipeline.ts",
+    "src/pipeline/verify.ts",
+    "src/pipeline/verifyHtml.ts",
+    "src/pipeline/transforms/html.ts",
+    "src/pipeline/ast/extract.ts",
+    "src/pipeline/ast/lang/typescript.ts",
+    "src/pipeline/ast/lang/python.ts"
+  ],
+  "src_tools": [
+    "src/tools/read.ts",
+    "src/tools/readMode.ts",
+    "src/tools/search.ts",
+    "src/tools/fetch.ts",
+    "src/tools/run.ts",
+    "src/tools/expand.ts",
+    "src/tools/stats.ts",
+    "src/tools/descriptors.ts"
+  ],
+  "src_support": [
+    "src/index.ts",
+    "src/context.ts",
+    "src/lib/pricing.ts",
+    "src/lib/search/passthrough.ts"
+  ],
+  "tests": [
+    "tests/tools.test.ts",
+    "tests/verify.test.ts",
+    "tests/pipeline.test.ts"
+  ],
+  "benchmarks": [
+    "benchmarks/2026-07-11-dogfood-v3.md"
+  ]
+}

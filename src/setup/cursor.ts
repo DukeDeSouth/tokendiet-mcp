@@ -47,7 +47,7 @@ export function runSetup(argv: string[]): void {
   const projectRoot = projectIdx >= 0 ? argv[projectIdx + 1]! : process.cwd();
 
   if (client !== 'cursor') {
-    process.stderr.write(`Only --client cursor is supported in Sprint 1.\n`);
+    process.stderr.write(`Only --client cursor is supported.\n`);
     process.exit(1);
   }
   runCursorSetup(projectRoot);

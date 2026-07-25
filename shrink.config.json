@@ -1,0 +1,19 @@
+{
+  "compress_tool_descriptions": true,
+  "compress_call_results": true,
+  "min_text_tokens": 300,
+  "min_saved_tokens": 50,
+  "servers": {
+    "default": {
+      "deny_tools": [],
+      "allow_tools": null,
+      "min_text_tokens": 300
+    },
+    "playwright": {
+      "allow_tools": null,
+      "deny_tools": ["browser_close"],
+      "min_text_tokens": 200,
+      "content_hint": "html"
+    }
+  }
+}

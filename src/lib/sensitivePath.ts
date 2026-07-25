@@ -1,6 +1,8 @@
 import { globMatch } from './search/glob.js';
 
 const DEFAULT_SENSITIVE_GLOBS = [
+  '**/.env',
+  '**/.env.*',
   '**/auth/**',
   '**/security/**',
   '**/payments/**',

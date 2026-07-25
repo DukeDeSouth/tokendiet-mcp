@@ -13,6 +13,26 @@ if (process.argv[2] === 'setup') {
   process.exit(0);
 }
 
+if (process.argv[2] === 'shrink') {
+  const sep = process.argv.indexOf('--');
+  const upstream = sep >= 0 ? process.argv.slice(sep + 1) : process.argv.slice(3);
+  if (upstream.length === 0) {
+    process.stderr.write(
+      'Usage: tokendiet-mcp shrink [--] -- <upstream-command> [args...]\n' +
+        'Example: tokendiet-mcp shrink -- npx @playwright/mcp@latest\n' +
+        'Set TOKENDIET_SHRINK_SERVER=playwright for per-upstream shrink.config.json profile.\n',
+    );
+    process.exit(1);
+  }
+  const { runShrinkProxy } = await import('./shrink/proxy.js');
+  await runShrinkProxy(upstream, {
+    ...(process.env.TOKENDIET_SHRINK_SERVER !== undefined && {
+      serverProfile: process.env.TOKENDIET_SHRINK_SERVER,
+    }),
+  });
+  process.exit(0);
+}
+
 let shuttingDown = false;
 function gracefulExit(): void {
   if (shuttingDown) return;
@@ -40,7 +60,7 @@ if (DEBUG && gcResult.removed > 0) {
 }
 
 const server = new Server(
-  { name: 'tokendiet', version: '0.2.0' },
+  { name: 'tokendiet', version: '0.7.0' },
   { capabilities: { tools: {} } },
 );
 

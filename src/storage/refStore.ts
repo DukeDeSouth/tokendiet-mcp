@@ -61,7 +61,7 @@ function listRefFiles(dir: string): RefFileEntry[] {
 
 /**
  * Stores full originals so a compressed view is never a dead end:
- * expand(ref) (Sprint 1 tool) reads them back. In-memory map backed by
+ * expand(ref) reads them back. In-memory map backed by
  * files so refs survive server restarts within a session.
  */
 export class RefStore {

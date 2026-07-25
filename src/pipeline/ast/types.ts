@@ -4,7 +4,8 @@ export type OutlineKind =
   | 'method'
   | 'interface'
   | 'type'
-  | 'variable';
+  | 'variable'
+  | 'enum';
 
 export interface OutlineItem {
   kind: OutlineKind;
@@ -19,9 +20,11 @@ export interface OutlineItem {
   endIndex: number;
 }
 
-export type CodeOutlineMode = 'outline' | 'signatures' | 'symbol';
+export type CodeOutlineMode = 'outline' | 'outline_plus' | 'signatures' | 'symbol';
 
 export interface ExtractionResult {
   imports: string[];
   items: OutlineItem[];
+  /** Module-level const/enum bindings rendered in full for outline+. */
+  topLevelBindings: OutlineItem[];
 }

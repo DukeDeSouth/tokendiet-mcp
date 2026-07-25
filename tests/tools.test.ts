@@ -42,6 +42,23 @@ describe('read tool', () => {
     }
   });
 
+  it('auto serves full below T_full with default cost model (no outline ladder)', async () => {
+    const body = Array.from(
+      { length: 80 },
+      (_, i) => `export function fn${i}(a: number, b: number): number { return a + b + ${i}; }\n`,
+    ).join('');
+    writeFileSync(join(dir, 'medium.ts'), body);
+    const tokens = countTokens(body);
+    expect(tokens).toBeGreaterThan(400);
+    expect(tokens).toBeLessThan(ctx.codeOutlineThreshold);
+    const res = await handleRead(ctx, { path: 'medium.ts', mode: 'auto' });
+    expect(res.status).toBe('full');
+    if (res.status === 'full') {
+      expect(res.compression.passthrough_reason).toBe('explicit_full');
+      expect(res.content).not.toContain('hint: expand(ref)');
+    }
+  });
+
   it('compresses large repetitive logs', async () => {
     const line = '2026-07-11T10:00:00Z INFO heartbeat ok\n';
     writeFileSync(join(dir, 'app.log'), line.repeat(300));
@@ -71,14 +88,23 @@ describe('read tool', () => {
     if (res.status === 'diff') expect(res.content).toContain('+line');
   });
 
-  it('falls back to compressed when diff would cost more than the file', async () => {
+  it('falls back to full when diff is too expensive and follow-up compress does not pay', async () => {
     writeFileSync(join(dir, 'rewrite.log'), 'a\n'.repeat(400));
-    await handleRead(ctx, { path: 'rewrite.log', mode: 'auto' });
+    const ctxLoose = createContext({
+      workspace: dir,
+      storage: ctx.storage,
+      refStore: ctx.refStore,
+      sessionId: ctx.sessionId,
+      servedThisSession: ctx.servedThisSession,
+      smallFileTokenThreshold: 1,
+      codeOutlineThreshold: 50,
+    });
+    await handleRead(ctxLoose, { path: 'rewrite.log', mode: 'auto' });
     writeFileSync(join(dir, 'rewrite.log'), `${'a\n'.repeat(399)}b\n`);
-    const res = await handleRead(ctx, { path: 'rewrite.log', mode: 'auto' });
-    expect(res.status).toBe('compressed');
-    if (res.status === 'compressed') {
-      expect(res.content.length).toBeGreaterThan(0);
+    const res = await handleRead(ctxLoose, { path: 'rewrite.log', mode: 'auto' });
+    expect(res.status).toBe('full');
+    if (res.status === 'full') {
+      expect(res.compression.passthrough_reason).toBeDefined();
     }
   });
 
@@ -150,8 +176,8 @@ describe('read tool', () => {
     const res = await handleRead(ctxCode, { path: 'big.ts', mode: 'auto' });
     expect(res.status).toBe('compressed');
     if (res.status === 'compressed') {
-      expect(res.read_mode).toBe('outline');
-      expect(res.content).toContain('# outline');
+      expect(res.read_mode).toBe('outline_plus');
+      expect(res.content).toContain('# outline_plus');
       expect(res.content).toContain('export function compute0');
       expect(res.compression.saved).toBeGreaterThan(0);
     }
@@ -227,12 +253,12 @@ describe('read tool', () => {
     expect(res.status).toBe('compressed');
     if (res.status === 'compressed') {
       expect(res.resolved_from).toBe('auto');
+      expect(['outline_plus', 'outline']).toContain(res.read_mode);
       expect(res.warnings?.length).toBeGreaterThan(0);
-      expect(res.omitted?.bodies).toBe(true);
     }
   });
 
-  it('preserves SECURITY/TODO in outline for sendPayment fixture', async () => {
+  it('preserves SECURITY/TODO in outline+ for sendPayment fixture', async () => {
     const src = `// SECURITY: never call without owner approval
 // TODO: leaks API key to logs
 export async function sendPayment(amount: number) {

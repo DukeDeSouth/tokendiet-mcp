@@ -17,7 +17,7 @@ describe('TypeScript AST extractors', () => {
     const { imports, items } = await extractDeclarations('typescript', source);
     expect(imports.length).toBeGreaterThanOrEqual(8);
     expect(items.map((i) => i.name)).toContain('handleRead');
-    expect(items.map((i) => i.name)).toContain('serveNewContent');
+    expect(items.map((i) => i.name)).toContain('handleReadSingle');
     expect(items.find((i) => i.name === 'handleRead')?.exported).toBe(true);
   });
 
@@ -26,14 +26,15 @@ describe('TypeScript AST extractors', () => {
     const outline = await extractCodeView('typescript', source, 'outline');
     expect(outline).toMatchSnapshot();
     expect(outline).toContain('export async function handleRead');
-    expect(outline).toContain('[268–');
+    expect(outline).toContain('[472–');
     expect(outline).toContain('hint: expand(ref)');
   });
 
   it('signatures mode includes full signature text', async () => {
     const source = readFileSync(READ_TS, 'utf8');
     const sigs = await extractCodeView('typescript', source, 'signatures');
-    expect(sigs).toContain('function handleRead(ctx: AppContext, input: ReadInput)');
+    expect(sigs).toContain('function handleReadSingle(ctx: AppContext, target: ReadTarget)');
+    expect(sigs).toContain('function handleRead(');
     expect(sigs).toContain('# signatures');
   });
 

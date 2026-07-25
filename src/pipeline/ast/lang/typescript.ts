@@ -8,6 +8,7 @@ const DECLARATION_TYPES = new Set([
   'method_definition',
   'interface_declaration',
   'type_alias_declaration',
+  'enum_declaration',
 ]);
 
 function importModule(node: Node, source: string): string {
@@ -63,6 +64,8 @@ function kindForNode(node: Node): OutlineKind {
       return 'interface';
     case 'type_alias_declaration':
       return 'type';
+    case 'enum_declaration':
+      return 'enum';
     case 'lexical_declaration':
       return 'variable';
     default:
@@ -70,12 +73,44 @@ function kindForNode(node: Node): OutlineKind {
   }
 }
 
+function pushTopLevelBinding(
+  node: Node,
+  source: string,
+  exported: boolean,
+  name: string,
+  kind: OutlineKind,
+  bindings: OutlineItem[],
+): void {
+  const range = lineRange(node);
+  let signature = source.slice(node.startIndex, node.endIndex).trim();
+  if (exported && !signature.startsWith('export ')) {
+    signature = `export ${signature}`;
+  }
+  bindings.push({
+    kind,
+    name,
+    signature,
+    ...range,
+    exported,
+    startIndex: node.startIndex,
+    endIndex: node.endIndex,
+  });
+}
+
 function collectDeclaration(
   node: Node,
   source: string,
   exported: boolean,
   items: OutlineItem[],
+  topLevelBindings: OutlineItem[],
 ): void {
+  if (node.type === 'enum_declaration') {
+    const name = nodeName(node);
+    if (!name) return;
+    pushTopLevelBinding(node, source, exported, name, 'enum', topLevelBindings);
+    return;
+  }
+
   if (node.type === 'lexical_declaration') {
     let hasArrow = false;
     for (let i = 0; i < node.childCount; i++) {
@@ -101,7 +136,12 @@ function collectDeclaration(
         }
       }
     }
-    if (!hasArrow) return;
+    if (!hasArrow) {
+      const name = nodeName(node);
+      if (name) {
+        pushTopLevelBinding(node, source, exported, name, 'variable', topLevelBindings);
+      }
+    }
     return;
   }
 
@@ -124,11 +164,17 @@ function collectDeclaration(
   });
 }
 
-function walkDeclarations(node: Node, source: string, exported: boolean, items: OutlineItem[]): void {
+function walkDeclarations(
+  node: Node,
+  source: string,
+  exported: boolean,
+  items: OutlineItem[],
+  topLevelBindings: OutlineItem[],
+): void {
   if (node.type === 'export_statement') {
     for (let i = 0; i < node.childCount; i++) {
       const child = node.child(i);
-      if (child) walkDeclarations(child, source, true, items);
+      if (child) walkDeclarations(child, source, true, items, topLevelBindings);
     }
     return;
   }
@@ -137,13 +183,13 @@ function walkDeclarations(node: Node, source: string, exported: boolean, items: 
     DECLARATION_TYPES.has(node.type) ||
     node.type === 'lexical_declaration'
   ) {
-    collectDeclaration(node, source, exported, items);
+    collectDeclaration(node, source, exported, items, topLevelBindings);
     return;
   }
 
   for (let i = 0; i < node.childCount; i++) {
     const child = node.child(i);
-    if (child) walkDeclarations(child, source, exported, items);
+    if (child) walkDeclarations(child, source, exported, items, topLevelBindings);
   }
 }
 
@@ -151,6 +197,7 @@ function walkDeclarations(node: Node, source: string, exported: boolean, items: 
 export function extractTypeScriptDeclarations(root: Node, source: string): ExtractionResult {
   const imports: string[] = [];
   const items: OutlineItem[] = [];
+  const topLevelBindings: OutlineItem[] = [];
 
   walkTree(root, (node) => {
     if (node.type === 'import_statement') {
@@ -158,10 +205,11 @@ export function extractTypeScriptDeclarations(root: Node, source: string): Extra
     }
   });
 
-  walkDeclarations(root, source, false, items);
+  walkDeclarations(root, source, false, items, topLevelBindings);
 
   return {
     imports: [...new Set(imports)],
     items,
+    topLevelBindings,
   };
 }

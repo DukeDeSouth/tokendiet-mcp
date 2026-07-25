@@ -3,10 +3,13 @@ import { astLanguageForExtension } from './lang.js';
 import { extractPythonDeclarations } from './lang/python.js';
 import { extractTypeScriptDeclarations } from './lang/typescript.js';
 import { withParsedTree } from './parser.js';
-import { renderOutline, renderOutlineWithAnnotations } from './render.js';
+import { renderOutline, renderOutlinePlus, renderOutlineWithAnnotations } from './render.js';
 import { findOutlineItem } from './symbols.js';
 import type { CodeOutlineMode, ExtractionResult } from './types.js';
 import type { AnnotationExtraction } from '../annotations.js';
+import { outlinePlusBodyBudget } from '../outlinePlus.js';
+import type { CostModelConfig } from '../../lib/costModel.js';
+import type { Encoding } from '../../types.js';
 
 export type { CodeOutlineMode, ExtractionResult, OutlineItem } from './types.js';
 export { astLanguageForExtension } from './lang.js';
@@ -34,15 +37,21 @@ export async function extractDeclarations(
   throw new Error(`AST extraction not implemented for ${language}`);
 }
 
-/** Render outline/signatures/symbol view from a prior extraction result. */
+export interface RenderCodeViewOptions {
+  costModel?: CostModelConfig;
+  encoding?: Encoding;
+}
+
+/** Render outline/signatures/symbol/outline_plus view from a prior extraction result. */
 export function renderCodeViewFromExtraction(
   source: string,
   extracted: ExtractionResult,
   mode: CodeOutlineMode,
   symbol?: string,
   annotations?: AnnotationExtraction,
+  options: RenderCodeViewOptions = {},
 ): string {
-  const { imports, items } = extracted;
+  const { imports, items, topLevelBindings } = extracted;
 
   if (mode === 'symbol') {
     if (!symbol?.trim()) {
@@ -53,6 +62,20 @@ export function renderCodeViewFromExtraction(
       throw new Error(`symbol not found: ${symbol}`);
     }
     return source.slice(item.startIndex, item.endIndex);
+  }
+
+  if (mode === 'outline_plus') {
+    const encoding = options.encoding ?? 'o200k_base';
+    const bodyBudget = outlinePlusBodyBudget(options.costModel);
+    return renderOutlinePlus(
+      source,
+      imports,
+      items,
+      topLevelBindings,
+      encoding,
+      bodyBudget,
+      annotations,
+    );
   }
 
   if (annotations && annotations.critical.length > 0) {
@@ -68,9 +91,10 @@ export async function extractCodeView(
   source: string,
   mode: CodeOutlineMode,
   symbol?: string,
+  options: RenderCodeViewOptions = {},
 ): Promise<string> {
   const extracted = await extractDeclarations(language, source);
-  return renderCodeViewFromExtraction(source, extracted, mode, symbol);
+  return renderCodeViewFromExtraction(source, extracted, mode, symbol, undefined, options);
 }
 
 /** Resolve language from file extension for extraction. */

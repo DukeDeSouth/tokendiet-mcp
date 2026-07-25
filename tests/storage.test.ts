@@ -70,7 +70,13 @@ describe('Storage (sqlite)', () => {
 
   it('returns zero totals on empty database', () => {
     const db = new Storage(':memory:');
-    expect(db.getSessionTotals('any')).toEqual({ tokens_in: 0, tokens_out: 0, saved: 0, calls: 0 });
+    expect(db.getSessionTotals('any')).toEqual({
+      tokens_in: 0,
+      tokens_out: 0,
+      saved: 0,
+      calls: 0,
+      follow_up_calls: 0,
+    });
     expect(db.getAllTimeTotals()).toEqual({ tokens_in: 0, tokens_out: 0, saved: 0, calls: 0 });
     db.close();
   });

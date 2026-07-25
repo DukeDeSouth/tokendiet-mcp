@@ -8,8 +8,8 @@ import { transformPlain } from './transforms/plain.js';
 type TransformFn = (content: string, options: TransformOptions) => TransformResult;
 
 /**
- * Sprint 0 dispatch table. 'code' and 'html' fall back to the plain
- * transform until the AST layer (Sprint 2) lands.
+ * Content-type dispatch table. 'code' and 'html' fall back to the plain
+ * transform until the AST layer handles them.
  */
 const TRANSFORMS: Record<ContentType, TransformFn> = {
   log: (c) => transformLog(c),

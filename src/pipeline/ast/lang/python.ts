@@ -177,5 +177,6 @@ export function extractPythonDeclarations(root: Node, source: string): Extractio
   return {
     imports: [...new Set(imports)],
     items,
+    topLevelBindings: [],
   };
 }

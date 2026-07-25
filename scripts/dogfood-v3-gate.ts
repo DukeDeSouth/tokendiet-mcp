@@ -1,5 +1,5 @@
 /**
- * Sprint 2 v3 gate summary — aggregates v2 baselines with v3 code/search/fetch scenarios.
+ * v3 gate summary — aggregates v2 baselines with v3 code/search/fetch scenarios.
  * Run: npm run dogfood:v3-gate  (after dogfood:r4 r5 sf; includes re-run of r1-r3)
  */
 import { spawn } from 'node:child_process';

@@ -36,6 +36,26 @@ const BANNED = [
   { re: /\bIMPACT_ANALYSIS\.md\b/i, label: 'IMPACT_ANALYSIS' },
   { re: /\bSOLUTION_PLAN\.md\b/i, label: 'SOLUTION_PLAN' },
   { re: /\bmemory-bank\//i, label: 'memory-bank path' },
+  { re: /\bINTAKE\.md\b/i, label: 'INTAKE.md' },
+  { re: /\bDISCOVERY\.md\b/i, label: 'DISCOVERY.md' },
+  { re: /\bSIMULATION\.md\b/i, label: 'SIMULATION.md' },
+  { re: /\bCONCEPT\.md\b/i, label: 'CONCEPT.md' },
+  { re: /\bp0-turn-neutral\b/i, label: 'p0-turn-neutral cycle' },
+  { re: /\bM7 cycle\b/i, label: 'M7 cycle' },
+  { re: /\bM7 MCP\b/i, label: 'M7 MCP' },
+  { re: /\bSprint [0-9]/i, label: 'Sprint N' },
+  { re: /\bphases? 0[–-]4\b/i, label: 'internal cycle phases 0-4' },
+  { re: /\bPhase [0-9]\b.*\bharness\b/i, label: 'internal cycle Phase harness' },
+];
+
+/** High-confidence credential formats — not generic words like "token" or "password". */
+const SECRET_PATTERNS = [
+  { re: /\bsk-[a-zA-Z0-9]{20,}\b/, label: 'OpenAI/Anthropic-style API key' },
+  { re: /\bghp_[a-zA-Z0-9]{36,}\b/, label: 'GitHub personal access token' },
+  { re: /\bgithub_pat_[a-zA-Z0-9_]{20,}\b/, label: 'GitHub fine-grained PAT' },
+  { re: /\bAKIA[0-9A-Z]{16}\b/, label: 'AWS access key id' },
+  { re: /\bxox[baprs]-[a-zA-Z0-9-]{10,}\b/, label: 'Slack token' },
+  { re: /-----BEGIN (?:RSA |OPENSSH |EC )?PRIVATE KEY-----/, label: 'private key block' },
 ];
 
 const SKIP = new Set(['check-disclosure.mjs', 'publish-to-github.mjs', 'package-lock.json']);
@@ -44,6 +64,10 @@ function walk(dir, out = []) {
   for (const name of readdirSync(dir)) {
     const abs = join(dir, name);
     if (SKIP.has(name)) continue;
+    if (name === '.env' || name.startsWith('.env.')) {
+      out.push(abs);
+      continue;
+    }
     const st = statSync(abs);
     if (st.isDirectory()) {
       if (name === 'node_modules' || name === 'dist' || name === '.data') continue;
@@ -76,10 +100,21 @@ for (const f of SCAN_FILES) {
 
 const violations = [];
 for (const file of files) {
+  const rel = relative(ROOT, file);
+  const base = rel.split(/[/\\]/).pop() ?? rel;
+  if (base === '.env' || base.startsWith('.env.')) {
+    violations.push({ file: rel, label: '.env file in publish tree' });
+    continue;
+  }
   const text = readFileSync(file, 'utf8');
   for (const { re, label } of BANNED) {
     if (re.test(text)) {
-      violations.push({ file: relative(ROOT, file), label });
+      violations.push({ file: rel, label });
+    }
+  }
+  for (const { re, label } of SECRET_PATTERNS) {
+    if (re.test(text)) {
+      violations.push({ file: rel, label });
     }
   }
 }

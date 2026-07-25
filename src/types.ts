@@ -56,9 +56,22 @@ export interface CompressionWire {
   saved: number;
   saved_pct: number;
   ref?: string;
+  /** Net session economics in input-token equivalents (saved minus turn cost if redundant). */
+  net_estimate?: number;
+  /** Set when server returns raw content because compression would not pay for the turn. */
+  passthrough_reason?: string;
 }
 
-export function toCompressionWire(c: Compression, ref?: string): CompressionWire {
+export interface CompressionWireExtras {
+  net_estimate?: number;
+  passthrough_reason?: string;
+}
+
+export function toCompressionWire(
+  c: Compression,
+  ref?: string,
+  extras?: CompressionWireExtras,
+): CompressionWire {
   const wire: CompressionWire = {
     tokens_in: c.tokensIn,
     tokens_out: c.tokensOut,
@@ -66,6 +79,8 @@ export function toCompressionWire(c: Compression, ref?: string): CompressionWire
     saved_pct: c.savedPct,
   };
   if (ref !== undefined) wire.ref = ref;
+  if (extras?.net_estimate !== undefined) wire.net_estimate = extras.net_estimate;
+  if (extras?.passthrough_reason !== undefined) wire.passthrough_reason = extras.passthrough_reason;
   return wire;
 }
 

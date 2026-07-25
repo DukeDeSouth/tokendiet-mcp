@@ -6,22 +6,36 @@ import { detectType } from '../pipeline/detectType.js';
 import type { ReadInput } from './schemas.js';
 
 /** Resolved read detail level (never `auto`). `plain` = default compress path for large non-outline files. */
-export type ResolvedReadMode = 'full' | 'outline' | 'signatures' | 'symbol' | 'plain';
+export type ResolvedReadMode =
+  | 'full'
+  | 'outline'
+  | 'outline_plus'
+  | 'signatures'
+  | 'symbol'
+  | 'plain';
 
 const MODE_RANK: Record<ResolvedReadMode, number> = {
   outline: 0,
-  signatures: 1,
-  symbol: 2,
-  plain: 3,
-  full: 3,
+  outline_plus: 1,
+  signatures: 2,
+  symbol: 3,
+  plain: 4,
+  full: 4,
 };
 
 export function modeRank(mode: ResolvedReadMode): number {
   return MODE_RANK[mode];
 }
 
-export function isAstReadMode(mode: ResolvedReadMode): mode is 'outline' | 'signatures' | 'symbol' {
-  return mode === 'outline' || mode === 'signatures' || mode === 'symbol';
+export function isAstReadMode(
+  mode: ResolvedReadMode,
+): mode is 'outline' | 'outline_plus' | 'signatures' | 'symbol' {
+  return (
+    mode === 'outline' ||
+    mode === 'outline_plus' ||
+    mode === 'signatures' ||
+    mode === 'symbol'
+  );
 }
 
 /** Resolve `auto` to a concrete mode from file extension and token count. */
@@ -39,16 +53,17 @@ export function resolveReadMode(
   }
   if (input.mode === 'full') return { mode: 'full' };
   if (input.mode === 'outline') return { mode: 'outline' };
+  if (input.mode === 'outline_plus') return { mode: 'outline_plus' };
   if (input.mode === 'signatures') return { mode: 'signatures' };
 
-  // auto
-  if (detectType('x', ext) === 'code' && tokensIn >= ctx.codeOutlineThreshold) {
-    if (astLanguageForExtension(ext)) {
-      if (isSensitivePath(relPath)) return { mode: 'signatures' };
-      return { mode: 'outline' };
-    }
+  // auto — turn-neutral: full passthrough below T_full (from cost model, ~3K BPE)
+  if (tokensIn < ctx.codeOutlineThreshold) return { mode: 'full' };
+
+  if (detectType('x', ext) === 'code' && astLanguageForExtension(ext)) {
+    if (isSensitivePath(relPath)) return { mode: 'signatures' };
+    return { mode: 'outline_plus' };
   }
-  if (tokensIn < ctx.smallFileTokenThreshold) return { mode: 'full' };
+
   return { mode: 'plain' };
 }
 

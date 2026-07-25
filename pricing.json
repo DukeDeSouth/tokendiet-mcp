@@ -1,9 +1,33 @@
 {
   "default_model": "claude-sonnet-4",
   "context_window_tokens": 200000,
+  "cache_read_ratio": 0.125,
+  "output_ratio": 8,
+  "avg_context_estimate": 55000,
+  "follow_up_rate_default": 0.3,
+  "compression_ratio_outline": 0.85,
+  "compression_ratio_outline_plus": 0.72,
   "models": [
-    { "id": "claude-sonnet-4", "label": "Claude Sonnet 4 (approx)", "input_per_million_usd": 3 },
-    { "id": "claude-opus-4", "label": "Claude Opus 4 (approx)", "input_per_million_usd": 15 },
-    { "id": "gpt-4o", "label": "GPT-4o", "input_per_million_usd": 2.5 }
+    {
+      "id": "claude-sonnet-4",
+      "label": "Claude Sonnet 4 (approx)",
+      "input_per_million_usd": 3,
+      "cache_read_per_million_usd": 0.375,
+      "output_per_million_usd": 24
+    },
+    {
+      "id": "claude-opus-4",
+      "label": "Claude Opus 4 (approx)",
+      "input_per_million_usd": 15,
+      "cache_read_per_million_usd": 1.875,
+      "output_per_million_usd": 120
+    },
+    {
+      "id": "gpt-4o",
+      "label": "GPT-4o",
+      "input_per_million_usd": 2.5,
+      "cache_read_per_million_usd": 0.3125,
+      "output_per_million_usd": 20
+    }
   ]
 }

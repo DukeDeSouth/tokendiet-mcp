@@ -29,8 +29,9 @@ const NUMBER_RE = /\d+(?:\.\d+)?/g;
 const LINE_RANGE_RE = /\[(\d+)[–-](\d+)\]/g;
 
 export interface VerifyOptions {
-  codeMode?: 'outline' | 'signatures' | 'symbol';
+  codeMode?: 'outline' | 'outline_plus' | 'signatures' | 'symbol';
   outlineItems?: OutlineItem[];
+  topLevelBindings?: OutlineItem[];
   criticalAnnotations?: AnnotationBlock[];
 }
 
@@ -105,6 +106,21 @@ function verifyCodeOutline(
   return failures;
 }
 
+function verifyTopLevelExports(compressed: string, bindings: OutlineItem[]): VerifyFailure[] {
+  const failures: VerifyFailure[] = [];
+  for (const binding of bindings) {
+    if (!binding.exported) continue;
+    const sig = binding.signature.trim();
+    if (!compressed.includes(binding.name) && !compressed.includes(sig)) {
+      failures.push({
+        rule: 'top-level-exports-preserved',
+        detail: `missing exported top-level binding: ${binding.name}`,
+      });
+    }
+  }
+  return failures;
+}
+
 function verifyCriticalAnnotations(compressed: string, blocks: AnnotationBlock[]): VerifyFailure[] {
   const failures: VerifyFailure[] = [];
   for (const block of blocks) {
@@ -173,10 +189,14 @@ export function verify(
 
   if (
     type === 'code' &&
-    (codeMode === 'outline' || codeMode === 'signatures') &&
+    (codeMode === 'outline' || codeMode === 'outline_plus' || codeMode === 'signatures') &&
     options.outlineItems
   ) {
     failures.push(...verifyCodeOutline(original, compressed, options.outlineItems));
+  }
+
+  if (type === 'code' && codeMode === 'outline_plus' && options.topLevelBindings?.length) {
+    failures.push(...verifyTopLevelExports(compressed, options.topLevelBindings));
   }
 
   if (options.criticalAnnotations?.length) {

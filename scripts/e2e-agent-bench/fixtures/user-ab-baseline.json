@@ -1,0 +1,13 @@
+{
+  "label": "User A/B — Codex baseline (no TokenDiet)",
+  "source": "external user feedback 2026-07-25",
+  "usage": {
+    "turns": 48,
+    "fresh_input": 407955,
+    "cache_read": 2591232,
+    "output": 21006
+  },
+  "billed_cost_usd": 26.7976,
+  "wall_time_sec": 521,
+  "quality_pass": true
+}

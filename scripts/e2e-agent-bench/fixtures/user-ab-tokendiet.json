@@ -1,0 +1,14 @@
+{
+  "label": "User A/B — Codex + TokenDiet MCP v1 (.mdc drill-down)",
+  "source": "external user feedback 2026-07-25",
+  "usage": {
+    "turns": 212,
+    "fresh_input": 334165,
+    "cache_read": 11644672,
+    "output": 41961
+  },
+  "billed_cost_usd": 60.7324,
+  "wall_time_sec": 1193,
+  "quality_pass": true,
+  "expected_gate": "FAIL"
+}
